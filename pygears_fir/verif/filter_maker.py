@@ -40,10 +40,13 @@ cutoff_hz = 10.0
 # Use firwin with a Kaiser window to create a lowpass FIR filter.
 taps = firwin(N, cutoff_hz/nyq_rate, window=('kaiser', beta))
 
-q = Quantizer(round_mode='ceil',
+q = Quantizer(round_mode='round_to_nearest',
               overflow_mode='saturate',
-              fix_format=(10,5))
-print(f'num is {q.quantize(2.5)}')
+              fix_format=(10,1))
+print(f'num is {q.quantize(2.8)}')
+print(f'num is {q.quantize(2.2)}')
+print(f'num is {q.quantize(-2.8)}')
+print(f'num is {q.quantize(-2.2)}')
 print(f'num is {q.quantize([1.5, -1])}')
 
 import pdb; pdb.set_trace()

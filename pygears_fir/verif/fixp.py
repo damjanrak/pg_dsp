@@ -29,6 +29,17 @@ class Quantizer:
                 else:
                     return -2**self.fix_len
 
-        shifted = int(float_number * (2**self.fraction_len))
+        shifted_float = float_number * (2**self.fraction_len)
+        shifted = int(shifted_float)
+
+        if self.round_mode == 'round_to_nearest':
+            error = shifted_float - shifted
+            if abs(error) > 0.5:
+                if error > 0:
+                    shifted = shifted + 1
+                else:
+                    shifted = shifted - 1
+
         sign_extended = shifted & (2**self.fix_len-1)
+
         return sign_extended
