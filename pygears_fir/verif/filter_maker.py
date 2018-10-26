@@ -47,10 +47,10 @@ scaled = x/np.max(np.abs(x))
 
 # prepare input and taps for hardware simulation
 quantized_input = q.quantize(list(scaled))
-quantized_coef = q.quantize(list(taps))
+quantized_taps = q.quantize(list(taps))
 
 with open('hw_taps.pickle', "wb") as tp:
-    pickle.dump(quantized_coef, tp)
+    pickle.dump(quantized_taps, tp)
 with open('hw_input.pickle', "wb") as ip:
     pickle.dump(quantized_input, ip)
 
