@@ -3,11 +3,11 @@ class Quantizer:
                  round_mode='floor',
                  overflow_mode='saturate',
                  fix_format=(16, 8)):
-        self.round_mode=round_mode
-        self.overflow_mode=overflow_mode
-        self.fix_len=fix_format[0]
-        self.fraction_len=fix_format[1]
-        self.fix_range= 2**(fix_format[0]-fix_format[1]-1)
+        self.round_mode = round_mode
+        self.overflow_mode = overflow_mode
+        self.fix_len = fix_format[0]
+        self.fraction_len = fix_format[1]
+        self.fix_range = 2**(fix_format[0] - fix_format[1] - 1)
 
     def quantize(self, floats):
         if isinstance(floats, list):
@@ -23,9 +23,9 @@ class Quantizer:
 
     def quantize_num(self, float_number):
         if self.overflow_mode == 'saturate':
-            if not(-self.fix_range <= float_number <= self.fix_range):
+            if not (-self.fix_range <= float_number <= self.fix_range):
                 if float_number > 0:
-                    return 2**(self.fix_len-1)
+                    return 2**(self.fix_len - 1)
                 else:
                     return -2**self.fix_len
 
@@ -40,6 +40,6 @@ class Quantizer:
                 else:
                     shifted = shifted - 1
 
-        sign_extended = shifted & (2**self.fix_len-1)
+        sign_extended = shifted & (2**self.fix_len - 1)
 
         return sign_extended
