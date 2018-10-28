@@ -1,4 +1,4 @@
-# Hardware accelerators for DSP algorithms implemented using PYGEARS
+# Hardware accelerators for DSP algorithms - novel hardware design approach PYGEARS
 I will go through hardware implementation of numerous accelerators targeting mostly DSP algorithms. This blog will try to explain power of new hw design methodology incorporated in PYGEARS.
 
 ## Finite Impulse Response *(FIR)* system - discrete convolution
