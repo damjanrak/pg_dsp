@@ -1,6 +1,6 @@
 from scipy.io.wavfile import write
 
-from pygears_fir.fir_filter.parallel_fir import parallel_fir
+from pygears_fir.fir.parallel_fir import parallel_fir
 from pygears import gear
 from pygears.sim import sim
 from pygears.sim.modules import drv, SimVerilated

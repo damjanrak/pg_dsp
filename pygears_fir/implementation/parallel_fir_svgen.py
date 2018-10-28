@@ -1,6 +1,6 @@
 import os
 
-from pygears_fir.fir_filter.parallel_fir import parallel_fir
+from pygears_fir.fir.parallel_fir import parallel_fir
 from pygears import Intf
 from pygears.svgen import svgen
 from pygears.typing import Queue, Uint

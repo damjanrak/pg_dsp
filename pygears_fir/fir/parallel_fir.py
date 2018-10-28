@@ -5,8 +5,8 @@ from pygears.common import dreg
 from pygears.common import project
 from pygears.cookbook import sdp
 from pygears.cookbook import qcnt
-from pygears_fir.fir_filter.mac import mac
-from pygears_fir.fir_filter.coefficient_loader import coefficient_loader
+from pygears_fir.fir.mac import mac
+from pygears_fir.fir.coefficient_loader import coefficient_loader
 
 
 @gear
