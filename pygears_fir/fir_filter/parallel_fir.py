@@ -1,11 +1,17 @@
 from pygears import gear
-from pygears.common import ccat
+from pygears.common import fmap
+from pygears.common import ccat, czip
 from pygears.common import dreg
 from pygears.common import project
 from pygears.cookbook import sdp
-from pygears.cookbook import mac
 from pygears.cookbook import qcnt
-from coefficient_loader import coefficient_loader
+from pygears_fir.fir_filter.mac import mac
+from pygears_fir.fir_filter.coefficient_loader import coefficient_loader
+
+
+@gear
+def mac_wrap(coefs, samples):
+    return czip(samples, coefs) | mac
 
 
 @gear
@@ -24,4 +30,6 @@ def parallel_fir(coefficient,
                                read_port,
                                depth=256)
 
-    return ccat(samples | dreg, coefficient_for_calc) | mac
+    res = samples | fmap(f=mac_wrap(coefficient_for_calc), lvl=1)
+
+    return res

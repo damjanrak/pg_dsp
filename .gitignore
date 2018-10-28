@@ -1,2 +1,4 @@
 *.pickle
 *.wav
+__pycache__
+build/

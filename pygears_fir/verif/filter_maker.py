@@ -1,60 +1,62 @@
-import pickle
+# import pickle
 import numpy as np
 from numpy import sin, pi, arange
-from scipy.io.wavfile import write
-from scipy.signal import kaiserord, lfilter, firwin
+# from scipy.io.wavfile import write
+from scipy.signal import kaiserord, firwin
 from utils.fixp import Quantizer
-# ------------------------------------------------
-# Create a signal for demonstration.
-# ------------------------------------------------
 
-sample_rate = 44100
-nsamples = 100000
-t = arange(nsamples) / sample_rate
-x = 0.8*sin(2*pi*100*t) + 0.2*sin(2*pi*1000*t) + 0.2*sin(2*pi*3000*t)
 
-# ------------------------------------------------
-# Create a FIR filter and apply it to x.
-# ------------------------------------------------
+def filter_maker():
+    sample_rate = 44100
+    nsamples = 100000
+    # Create signal for demonstration
+    t = arange(nsamples) / sample_rate
+    x = 0.8*sin(2*pi*100*t) + 0.2*sin(2*pi*1000*t) + 0.2*sin(2*pi*3000*t)
 
-# The Nyquist rate of the signal.
-nyq_rate = sample_rate / 2.0
+    # ------------------------------------------------
+    # Create a FIR filter and apply it to x.
+    # ------------------------------------------------
 
-# The desired width of the transition from pass to stop,
-# relative to the Nyquist rate. Width[Hz] = 1/50 * nyq_rate
-width = 1 / 50
+    # The Nyquist rate of the signal.
+    nyq_rate = sample_rate / 2.0
 
-# The desired attenuation in the stop band, in dB.
-ripple_db = 60.0
+    # The desired width of the transition from pass to stop,
+    # relative to the Nyquist rate. Width[Hz] = 1/50 * nyq_rate
+    width = 1 / 50
 
-# Compute the order and Kaiser parameter for the FIR filter.
-N, beta = kaiserord(ripple_db, width)
+    # The desired attenuation in the stop band, in dB.
+    ripple_db = 60.0
 
-# The cutoff frequency of the filter.
-cutoff_hz = 500.0
+    # Compute the order and Kaiser parameter for the FIR filter.
+    N, beta = kaiserord(ripple_db, width)
 
-# Use firwin with a Kaiser window to create a lowpass FIR filter.
-taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
+    # The cutoff frequency of the filter.
+    cutoff_hz = 500.0
 
-# quantizer for hardware input preparation
-q = Quantizer(
-    round_mode='round_to_nearest',
-    overflow_mode='saturate',
-    fix_format=(16, 15))
+    # Use firwin with a Kaiser window to create a lowpass FIR filter.
+    taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
 
-# scale input to avoid clipping
-scaled = x/np.max(np.abs(x))
+    # quantizer for hardware input preparation
+    q = Quantizer(
+        round_mode='round_to_nearest',
+        overflow_mode='saturate',
+        fix_format=(16, 15))
 
-# prepare input and taps for hardware simulation
-quantized_input = q.quantize(list(scaled))
-quantized_taps = q.quantize(list(taps))
+    # scale input to avoid clipping
+    scaled = x/np.max(np.abs(x))
 
-with open('hw_taps.pickle', "wb") as tp:
-    pickle.dump(quantized_taps, tp)
-with open('hw_input.pickle', "wb") as ip:
-    pickle.dump(quantized_input, ip)
+    # prepare input and taps for hardware simulation
+    quantized_input = q.quantize(list(scaled))
+    quantized_taps = q.quantize(list(taps))
 
-# save original and filtered signal
-write('input.wav', sample_rate, x)
-filtered_x = lfilter(taps, 1.0, x)
-write('output.wav', sample_rate, filtered_x)
+    # with open('hw_taps.pickle', "wb") as tp:
+    #     pickle.dump(quantized_taps, tp)
+    # with open('hw_input.pickle', "wb") as ip:
+    #     pickle.dump(quantized_input, ip)
+
+    # # save original and filtered signal
+    # write('input.wav', sample_rate, x)
+    # filtered_x = lfilter(taps, 1.0, x)
+    # write('output.wav', sample_rate, filtered_x)
+
+    return quantized_input, quantized_taps
