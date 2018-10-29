@@ -16,7 +16,7 @@ Every project will contain at least three subdirectories:
 - project_name
 - implementation
 - verif
-
-- Project_name directory will contain hardware implementation of accelerator written in **PyGears**.
-- Implementation consist of all scripts needed for synthesizable code generation.
-- Verif folder will contain files needed for simulation (verification)
+|
+**Project_name** directory will contain hardware implementation of accelerator written in **PyGears**.
+**Implementation** consist of all scripts needed for synthesizable code generation.
+**Verif** folder will contain files needed for simulation (verification)
