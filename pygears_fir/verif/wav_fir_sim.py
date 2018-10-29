@@ -26,7 +26,7 @@ def wav_fir_sim(sample_rate=44100,
 
     print(f'Result length: {len(res)}')
 
-    write('fir_output.wav', sample_rate, res)
+    # write('fir_output.wav', sample_rate, res)
 
 
 @gear
@@ -53,8 +53,8 @@ def mono_fir_sim(samples,
 
     result = []
     # TODO: generate real queues
-    samples_din = drv(t=Queue[Int[sample_width], 2], seq=samples)
-    coef_din = drv(t=Queue[Int[sample_width]], seq=coef)
+    samples_din = drv(t=Queue[Int[sample_width], 2], seq=[[samples]])
+    coef_din = drv(t=Queue[Int[sample_width]], seq=[coef])
 
     samples_din \
         | parallel_fir(coef_din,
