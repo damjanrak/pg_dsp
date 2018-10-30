@@ -3,7 +3,7 @@ import numpy as np
 from numpy import sin, pi, arange
 # from scipy.io.wavfile import write
 from scipy.signal import kaiserord, firwin
-from utils.fixp import Quantizer
+from dsp_hw_designs.utils.fixp import Quantizer
 
 
 def filter_maker():

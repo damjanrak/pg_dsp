@@ -1,11 +1,26 @@
-from scipy.io.wavfile import write
+# from scipy.io.wavfile import write
 
-from pygears_fir.fir.parallel_fir import parallel_fir
 from pygears import gear
 from pygears.sim import sim
 from pygears.sim.modules import drv, SimVerilated
 from pygears.typing import Int, typeof, Queue
-from pygears_fir.verif.filter_maker import filter_maker
+from dsp_hw_designs.pygears_fir.verif.filter_maker import filter_maker
+from dsp_hw_designs.pygears_fir.fir.parallel_fir import parallel_fir
+
+
+def audio_window(window_start, filter_ord, audio_input):
+    for i in range(filter_ord):
+        yield audio_input[window_start+i]
+
+
+def audio_seq(audio_input, filter_ord):
+    for window_start in range(len(audio_input)):
+        yield audio_window(window_start, filter_ord, audio_input)
+
+
+def taps_seq(taps):
+    for tap in taps:
+        yield tap
 
 
 def wav_fir_sim(sample_rate=44100,
@@ -18,9 +33,14 @@ def wav_fir_sim(sample_rate=44100,
 
     quantized_input, quantized_taps = filter_maker()
 
+    audio = audio_seq(audio_input=quantized_input,
+                      filter_ord=len(quantized_taps))
+
+    taps = taps_seq(quantized_taps)
+
     res = mono_fir_sim(
-        samples=quantized_input,
-        coef=quantized_taps,
+        samples=audio,
+        coef=taps,
         sample_width=16,
         cosim=cosim)
 
@@ -53,13 +73,13 @@ def mono_fir_sim(samples,
 
     result = []
     # TODO: generate real queues
-    samples_din = drv(t=Queue[Int[sample_width], 2], seq=[[samples]])
+    samples_din = drv(t=Queue[Int[sample_width], 2], seq=[samples])
     coef_din = drv(t=Queue[Int[sample_width]], seq=[coef])
 
     samples_din \
         | parallel_fir(coef_din,
                        sim_cls=SimVerilated if cosim else None) \
-        | collect(result=result, samples_num=len(samples))
+        | collect(result=result, samples_num=None)
 
     sim(outdir='./build')
 
