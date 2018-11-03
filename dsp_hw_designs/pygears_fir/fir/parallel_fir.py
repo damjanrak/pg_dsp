@@ -7,8 +7,8 @@ from dsp_hw_designs.pygears_fir.fir.coefficient_loader import coefficient_loader
 
 @gear
 def mac_wrap(coefs, samples):
-    return czip(samples, coefs) | mac
-
+    helper = czip(samples, coefs) | mac
+    return helper
 
 @gear
 def parallel_fir(coefficient, samples):
@@ -21,8 +21,8 @@ def parallel_fir(coefficient, samples):
 
     read_port = coefficient_loader(coefficient, samples)
 
-    coefficient_for_calc = sdp(write_port, read_port, depth=256)
+    coefficient_for_calc = sdp(write_port, read_port, depth=2048)
 
-    res = samples | fmap(f=mac_wrap(coefficient_for_calc), lvl=1)
+    res = samples | fmap(f=mac_wrap(coefficient_for_calc), fcat=czip, lvl=1)
 
     return res

@@ -17,6 +17,6 @@ def coefficient_loader(coefficient,
 
     rng_config = ccat(const(val=0), coefficient_num_sync, const(val=1))
 
-    read_address = rng_config | rng | project
+    read_address = rng_config | rng(cnt_one_more=True) | project
 
     return read_address

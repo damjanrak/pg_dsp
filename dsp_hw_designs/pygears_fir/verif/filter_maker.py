@@ -8,7 +8,7 @@ from dsp_hw_designs.utils.fixp import Quantizer
 
 def filter_maker():
     sample_rate = 44100
-    nsamples = 100000
+    nsamples = 1000
     # Create signal for demonstration
     t = arange(nsamples) / sample_rate
     x = 0.8*sin(2*pi*100*t) + 0.2*sin(2*pi*1000*t) + 0.2*sin(2*pi*3000*t)
