@@ -1,5 +1,4 @@
 from pygears import gear
-from pygears.typing import Uint
 from pygears.common import dreg, quenvelope, ccat, cart, project, const
 from pygears.cookbook import qlen_cnt, rng
 
@@ -8,14 +7,14 @@ from pygears.cookbook import qlen_cnt, rng
 def coefficient_loader(coefficient,
                        samples):
 
-    window_pulse = samples | quenvelope(lvl=1)
+    coefficient_num = coefficient | qlen_cnt(cnt_lvl=0) | dreg
 
-    coefficien_num = coefficient | qlen_cnt(cnt_lvl=0) | dreg
+    new_window_start = samples | quenvelope(lvl=1)
 
-    # TODO: remove type cast
-    coefficient_num_sync = cart(window_pulse, coefficien_num) | Uint[16]
+    # TODO: fix tuple collapse
+    coefficient_num_sync = cart(new_window_start, coefficient_num) | project
 
-    rng_config = ccat(const(val=0), coefficient_num_sync, const(val=1))
+    rng_config = ccat(const(val=0), coefficient_num_sync[1], const(val=1))
 
     read_address = rng_config | rng(cnt_one_more=True) | project
 

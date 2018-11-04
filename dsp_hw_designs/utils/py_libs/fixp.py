@@ -1,3 +1,6 @@
+# TODO: There is a bug when round_mode is round_to_nearest
+
+
 class Quantizer:
     def __init__(self,
                  round_mode='floor',
