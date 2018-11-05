@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import sin, pi, arange
 from scipy.signal import kaiserord, firwin
-from dsp_hw_designs.utils.py_libs.fixp import Quantizer
+from pg_dsp.utils.py_libs.fixp import Quantizer
 
 
 def filter_maker(sample_rate_hz=44100,

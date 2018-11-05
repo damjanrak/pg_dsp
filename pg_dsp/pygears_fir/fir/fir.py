@@ -3,7 +3,7 @@ from pygears.typing import Queue
 from pygears.common import fmap, ccat, cart, czip, project, quenvelope
 from pygears.common import const, dreg
 from pygears.cookbook import qcnt, sdp, qlen_cnt, rng
-from dsp_hw_designs.utils.custom_gears.mac import mac
+from pg_dsp.utils.custom_gears.mac import mac
 
 
 @gear

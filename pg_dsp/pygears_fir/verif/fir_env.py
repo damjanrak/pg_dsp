@@ -2,7 +2,7 @@ from pygears import gear
 from pygears.sim import sim
 from pygears.sim.modules import drv, SimVerilated
 from pygears.typing import Int, typeof, Queue
-from dsp_hw_designs.pygears_fir.fir.fir import fir
+from pg_dsp.pygears_fir.fir.fir import fir
 
 
 @gear

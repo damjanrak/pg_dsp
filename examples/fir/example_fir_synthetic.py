@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.io.wavfile import write
-from dsp_hw_designs.pygears_fir.verif.filter_maker import filter_maker
-from dsp_hw_designs.pygears_fir.verif.fir_env import fir_sim
-from dsp_hw_designs.pygears_fir.verif.fir_seqs import audio_seq
+from pg_dsp.pygears_fir.verif.filter_maker import filter_maker
+from pg_dsp.pygears_fir.verif.fir_env import fir_sim
+from pg_dsp.pygears_fir.verif.fir_seqs import audio_seq
 
 
 def example_synthetic(sample_rate_hz=44100,
