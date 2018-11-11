@@ -3,8 +3,8 @@ FIR example
 
 Finite impulese response system is used as filter and tested on synthetic sound. If you run script in this directory it will execute function which will create low-pass filter with cut-off frequency set by default at 500Hz. Then, it will generate synthetic sound which consists of three different sine waves (100Hz, 1000Hz and 3000Hz). Both, generated input and filter coefficients will pass through Quantizer which prepare signals for real hardware (quantizes them to fix-point representation). Here is wrapper function call for this example:
 
-.. data:: synthetic example definition
-   .. code-block:: python
+.. code-block:: python
+
       example_synthetic(sample_rate_hz=44100,
                         nsamples=1000,
                         input_freqs_hz=[100, 1000, 3000],
@@ -14,8 +14,7 @@ Finite impulese response system is used as filter and tested on synthetic sound.
                         fix_format=(16, 15),
                         cosim=True):
 
-
-As it can be seen, to play with example you can change sample rate, cut off frequency, 3 different input frequencies specified by input_freqs_hz argument, etc.
+As it can be seen, to play with example you can change sample rate, cut off frequency, number of samples that will be filtered, 3 different input frequencies specified by input_freqs_hz argument, transition width which expressed as fraction of sample rate, minimum suppression in stop band, cut-off, and finally fix-point format used by hardware which is by default set to have 15 bits for fractional part of number and 16 at all.
 
 After preparation, input signal is saved as .wav file named *synthetic_test_input.wav* and pass to hardware simulator. At the end, hardware output is saved as .wav file in file named *synthetic_test_output.wav*.
 
