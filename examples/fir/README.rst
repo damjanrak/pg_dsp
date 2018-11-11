@@ -14,13 +14,14 @@ Finite impulese response system is used as filter and tested on synthetic sound.
                         fix_format=(16, 15),
                         cosim=True):
 
-As it can be seen, to play with example you can change sample rate, cut off frequency, number of samples that will be filtered, 3 different input frequencies specified by input_freqs_hz argument, transition width which expressed as fraction of sample rate, minimum suppression in stop band, cut-off, and finally fix-point format used by hardware which is by default set to have 15 bits for fractional part of number and 16 at all.
+As it can be seen, to play with example you can change sample rate, number of samples that will be filtered, 3 different input frequencies specified by input_freqs_hz parameter, transition width which is expressed as fraction of sample rate, minimum suppression in stop band, cut-off, and finally fix-point format used by hardware which is by default set to have 15 bits for fractional part of number and 16 at all.
 
 After preparation, input signal is saved as .wav file named *synthetic_test_input.wav* and pass to hardware simulator. At the end, hardware output is saved as .wav file in file named *synthetic_test_output.wav*.
 
 To hear difference between input and output signals just play created .wav files. In *synthetic_test_input.wav* you should hear all three frequencies unlike in *synthetic_test_output.wav* where you should hear only lowest one. If you are more visual person see image below which visualize input and output of filter.
 
-**NOTE**: To hear something meanful run function with at least 5000 samples (duration > 0.1s) which will create sound long enough to be captured by human.
-
 .. image:: ../../docs/images/example_fir_synthetic.png
    :align: center
+
+**NOTE**: To hear something meanful run function with at least 5000 samples (duration > 0.1s) which will create sound long enough to be captured by human.
+
