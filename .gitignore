@@ -1,0 +1,6 @@
+docs/
+pg_dsp
+examples/
+tests/
+*.egg-info/
+*_bdpfigure/
