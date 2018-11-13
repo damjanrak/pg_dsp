@@ -66,7 +66,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
+html_theme = 'alabaster'
 # html_title = "PyGears - HW Design: A Functional Approach"
 # html_short_title = "PyGears"
 # html_baseurl = "https://www.pygears.org"
@@ -76,15 +76,15 @@ pygments_style = 'sphinx'
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {
-#     'travis_button': False,
-#     'github_user': 'bogdanvuk',
-#     'github_repo': 'pygears',
-#     'github_banner': True,
-#     'description': 'HW Design: A Functional Approach',
-#     'logo': 'logo.png',
-#     'sidebar_width': '230px'
-# }
+html_theme_options = {
+    'travis_button': False,
+    'github_user': 'damjanrak',
+    'github_repo': 'pg_dsp',
+    'github_banner': True,
+    'description': 'HW Design: A Functional Approach',
+    # 'logo': 'logo.png',
+    # 'sidebar_width': '230px'
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
