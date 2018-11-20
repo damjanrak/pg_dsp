@@ -15,8 +15,7 @@ cd $(git rev-parse --show-toplevel)
 git ls-files -z | xargs -0 rm -f
 mv ./docs/_build/html/{.,}* ./
 
-gitignore="docs/
-pg_dsp
+gitignore="pg_dsp/
 examples/
 tests/
 *.egg-info/
