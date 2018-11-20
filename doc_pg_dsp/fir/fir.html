@@ -1,0 +1,357 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>FIR &#8212; pg_dsp  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="Implementations" href="../index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="fir">
+<h1>FIR<a class="headerlink" href="#fir" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>FIR systems are commonly used for digital signal processing. They can do
+signal filtration when used as filters or discrete convolution. Also
+they are used for reverberation.</p>
+<p>As name says FIR system has impulse response of finite durations. That
+means if we drive discrete delta impulse at FIR input its respons will
+setls down to zero in finite time. Discrete delta impuls can be written
+as:</p>
+<div class="math">
+<p><img src="../../_images/math/c7e2716b27b54b5b9c2a635c3ea28f2efacbf927.png" alt="\begin{aligned}
+    \delta(n) =
+    \left\{
+        \begin{array}{ll}
+            1 &amp; \mbox{if } n = 0 \\
+            0 &amp; \mbox{if } n \neq 0
+        \end{array}
+    \right.     \end{aligned}"/></p>
+</div><p>Mathematical record of finite respons on delta impulse should looks
+like:</p>
+<div class="math">
+<p><img src="../../_images/math/45f7717cd651cae0af47800eb2d95928fce4ebf1.png" alt="\begin{aligned}
+    g(n) =
+    \left\{
+        \begin{array}{ll}
+            b_n &amp; \mbox{if } 0 \leq n \leq M \\
+            0, &amp; \mbox{if } n &gt; M
+        \end{array}
+    \right.\end{aligned}"/></p>
+</div><p>where b<sub>n</sub> represents impulse response in particular time step n,
+and M is response length. Output equation of FIR systems can be written
+as:</p>
+<div class="math">
+<p><img src="../../_images/math/4071957881cf493f8518a3cd9203dabf247cb7c5.png" alt="\label{eq:FIR output equation}
+y(n) = \sum_{i=0}^{n}{b_{i} \cdot u(n-i)}"/></p>
+</div><p>Having all that in mind one possible implementation of system with
+output equation like 3 is shown in figure 1.</p>
+<p>Translation of building blocks in figure 1 to digital hardware is
+straightforward. Just replace adding block with adder, gain block with
+multiplier, and delay block (E<sup>-1</sup>) with register. One possible
+implementation could be to copy block diagrame directly to some HDL code
+but that would not be general enough. We suggest another one shown in
+figure 2. As we can see, there is a memory storage for coefficients, and
+multiply accumulate unit that do summation from equation 3. Data from
+input named coefficients is loaded to memory before computating 3. After
+loading surrounding hardware should start streaming data samples through
+samples interface. Connection from samples bus to coef memory is here
+just to indicate that we need mechanism to synchronize input samples
+with appropriate coefficient from memory. Later we will show how to do
+that efficiently using <strong>PyGears</strong>.</p>
+<p>Let’s go back to the figure 1. Beside it will be slow in terms of
+frequency because of long combinational path, it will not be optimal
+regarding silicon needed for implementation. It will use M+1 multipliers
+and M adders. Because of that, we implement hardware that calculate FIR
+output sequentially. First, delay registers were removed outside the
+hardware block assuming that some other component will drive input
+sequence correctly. That means that current input sample and delayed
+ones will be driven as stream. If we look at equation 3 this stream is
+represented by <img class="math" src="../../_images/math/2a0b93d1399b30d23fb2d700bbfcc3e43c8b9c5a.png" alt="u(n-i)"/> part which sould be multiplied with
+appropriate coefficient b<sub>i</sub>. Because FIR coefficient will be
+used over and over again a decision is made to store coefficient in
+memory module inside the hardware. Another reason for such
+implementation is caused by idea to make hardware reusable for more
+general mathematical operation behind the equation 3 called convolution
+because order of samples could vary.</p>
+</div>
+<div class="section" id="fir-api">
+<h2>FIR API<a class="headerlink" href="#fir-api" title="Permalink to this headline">¶</a></h2>
+<p>Function named fir represent whole design. It has two inputs, one for
+coefficients and other for samples. Beside inputs it has two parameters,
+shamt and coefficient depth. Its output is queue of integers with same
+width as input samples.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fir</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span>
+        <span class="n">samples</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">shamt</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+        <span class="n">coefficient</span> <span class="n">depth</span><span class="o">=</span><span class="mi">2048</span><span class="p">):</span>
+</pre></div>
+</div>
+<p>Coefs type is queue of integers. As name says this input serves to
+receive all coefficients of FIR system.</p>
+<p>Samples input is also queue of integers but it is second order queue.
+This means that samples are treated as queue of queues where inner queue
+correspond to one window needed for calculation of one output sample.
+For example, in audio filtration this window of samples represents
+current sample plus filter order number of previous samples. In 2D
+convolution in CNNs this window is actually part of input feature map
+which has shape same as kernel (FIR coefficients). Outer queue
+correspond to end of input sequence. In audio filtration that can be end
+of song, while in 2D convolution that is end of input feature map.</p>
+<p>Shamt parameter is shift amount for resulting output. This is necessary
+if we want to keep nunmber format same after FIR processing. Number is
+extended because of multiplication opperation.</p>
+<p>Coefficient depth correspond to coefficient memory depth. As an example,
+in audio filtration this number represent max filter order that hardware
+support.</p>
+</div>
+<div class="section" id="hardware-description">
+<h2>Hardware Description<a class="headerlink" href="#hardware-description" title="Permalink to this headline">¶</a></h2>
+<p>Coefficient memory is implemented as simple dual port RAM memory, with
+same capabilities as matching Xilinx SDP memory. SDP funtion interface
+is listed in next code fragment.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">TWrDin</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Uint</span><span class="p">[</span><span class="s1">&#39;w_addr&#39;</span><span class="p">],</span> <span class="s1">&#39;w_data&#39;</span><span class="p">]</span>
+<span class="n">TRdDin</span> <span class="o">=</span> <span class="n">Uint</span><span class="p">[</span><span class="s1">&#39;w_addr&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sdp</span><span class="p">(</span><span class="n">wr_addr_data_if</span><span class="p">:</span> <span class="n">TWrDin</span><span class="p">,</span>
+        <span class="n">rd_addr_if</span><span class="p">:</span> <span class="n">TRdDin</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">w_data</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;w_data&#39;</span><span class="p">,</span>
+        <span class="n">w_addr</span><span class="o">=</span><span class="sa">b</span><span class="s1">&#39;w_addr&#39;</span><span class="p">,</span>
+        <span class="n">depth</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="sa">b</span><span class="s1">&#39;w_data&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Interesting parameters for our application are write port, read port and
+depth. Write port is of type <em>Tuple(address, data)</em> while read port is
+just address.</p>
+<p>Because coefficients interface does not contain address, hardware will
+create address internally. In this application address values have
+regular increasing order from 0 to coefficient num. For address we use
+module named <em>qcnt</em>. This module receive coefficient form input and
+counts it. At the output it serves number that correspond to coefficient
+possition in input queue which is equal to address in local memory.
+Because <em>qcnt</em> output is queue of all this addresses (for example, if
+filter has 3 coefficient output of <em>qcnt</em> will looks like [0, 1, 2]) and
+<em>sdp</em> expects just <em>Tuple(address, data)</em> we needed to cast queue to
+data which is done by <em>project</em> module. <em>Project</em> takes queue at its
+input and reduce queue level (default reduction is 1 level). Now
+addresses are created and we need to project coefs input because its
+type is also queue and concatenate address with coefficient. Finally, we
+get input Tuple for write port of <em>sdp</em>. Code below is responsible for
+the described process.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">write_address</span> <span class="o">=</span> <span class="n">coefs</span> \
+              <span class="o">|</span> <span class="n">qcnt</span> \
+              <span class="o">|</span> <span class="n">project</span>
+
+<span class="n">write_data</span> <span class="o">=</span> <span class="n">coefs</span> <span class="o">|</span> <span class="n">project</span><span class="p">(</span><span class="n">lvl</span><span class="o">=</span><span class="n">coefs</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">lvl</span><span class="p">)</span>
+<span class="n">write_port</span> <span class="o">=</span> <span class="n">ccat</span><span class="p">(</span><span class="n">write_address</span><span class="p">,</span> <span class="n">write_data</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To execute FIR opperation we must multiply every sample from input
+window with corresponding coefficient and accumulate all these
+multiplication results. For next output sample process is repeated with
+new input sample. That means hardware should reuse coefficients again
+and again. What is important for us is that order of coefficient neede
+for multiplication is regular and starts from 0 to coefficient num.
+Practically speaking we need read address generator that create
+addresses starting from 0 to coefficient num. In order to realize this
+we must count coefficients and that would be done while writing
+coefficient to local memory. Modul named <em>qlen cnt</em> will receive
+coefficient on its input and counts queue length. At the end of queue it
+serves results which is stored in register. This is done in lines below.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">coefs_num</span> <span class="o">=</span> <span class="n">coefs</span> \
+            <span class="o">|</span> <span class="n">qlen_cnt</span><span class="p">(</span><span class="n">cnt_lvl</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> \
+            <span class="o">|</span> <span class="n">dreg</span>
+</pre></div>
+</div>
+<p>To start FIR opperation we need sequence of read addresses in regular
+order as mentioned. Additionally, we need this sequence for every output
+sample. Because sequence should be triggered at the beggining of new
+input window, samples input is passed to <em>queuenvelope</em> module which
+takes subqueue (one window) and produce one output for every input
+window. Its output will be only information about highest order queue
+state which will tell us if current window is last window or it isn’t.
+This information is not currently important but it is used to finaly
+consume information about coefficients num stored in <em>dreg</em>. At the end
+of input sequence, dreg result is pulled and FIR module is ready to
+receive new coefficients. Speaking at lower level of abstraction,
+<em>ready</em> signal is passed to <em>dreg</em> with last window in input sequence
+because of <em>cart</em> module nature. As mentioned <em>queuenvelope</em> output is
+brought to cartezian module (<em>cart</em>) which concatenates previously
+calculated coefs num with this trigger. That means that we will get one
+coefs num per every input window (subqueue). This information is needed
+for range generator that will interpret it as upper limit of counting.
+Range generator (<em>rng</em>) module receive command of type <em>Tuple(start,
+end, increment)</em>. To prepare configuration we will concatenate constant
+zero (<em>const(val=0)</em>) as beggining, dot pruduct len which is upper limit
+calculated previously, and constant one for increment. This
+configuration is passed to <em>rng</em> which outputs read address sequence.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">new_window</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">|</span> <span class="n">quenvelope</span><span class="p">(</span><span class="n">lvl</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dot_product_len</span> <span class="o">=</span> <span class="n">cart</span><span class="p">(</span><span class="n">new_window</span><span class="p">,</span> <span class="n">coefs_num</span><span class="p">)</span> \
+          <span class="o">|</span> <span class="n">project</span>
+</pre></div>
+</div>
+<p>Now, we have prepared read and write ports for memory so next line will
+create memory module and connect it.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">coefficient_for_calc</span> <span class="o">=</span> <span class="n">sdp</span><span class="p">(</span><span class="n">write_port</span><span class="p">,</span>
+                   <span class="n">read_port</span><span class="p">,</span>
+                   <span class="n">depth</span><span class="o">=</span><span class="n">coefficient_depth</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next, we need MAC modul which will take samples and coefficient,
+multiply them and accumulate. For this purpose we can use <strong>PyGears</strong>
+built in modules named <em>add</em> and <em>mul</em>. However, targeted Xilinx
+compiler is not capable of merging these two modules and mapping them to
+on chip DSP block. Because of that custom gear <em>mac</em> is created. It is
+written in pure <strong>SystemVerilog</strong> and can be found in
+<em>utils/custom_gears/svlib/mac.sv</em>. Here is wrapper function used to
+call this module.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="n">TDin</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Int</span><span class="p">[</span><span class="s1">&#39;w_data&#39;</span><span class="p">],</span> <span class="n">Int</span><span class="p">[</span><span class="s1">&#39;w_data&#39;</span><span class="p">]]]</span>
+
+<span class="nd">@gear</span>
+<span class="k">def</span> <span class="nf">mac</span><span class="p">(</span><span class="n">din</span><span class="p">:</span> <span class="n">TDin</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Int</span><span class="p">[</span><span class="sa">b</span><span class="s1">&#39;2*w_data&#39;</span><span class="p">]:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>As it can be seen it receives two integers and produce output which has
+len is twice wider than input integers. Because input samples are second
+order queue and <em>mac</em> module receives queue we need to remove
+information of the highest order queue from <em>mac</em> input. For this
+purpose <em>fmap</em> can be used. In this particular application <em>fmap</em> is
+used as some kind of wrapper that allow us to use <em>mac</em> module for the
+input type for which it is not foreseen. That means <em>fmap</em> increase
+reusability of general modules. Of course we could implement <em>mac</em>
+module in that way that it can handle two input interfaces of different
+type (queue of coefficients, and second order queue for input samples)
+but that solution will create application specific <em>mac</em> module which
+has less chance to be reused in other application. Beside reusability,
+implemented <em>mac</em> was written with single responsibility idea on mind.
+That means, it is more natural that <em>mac</em> receives two queues, do
+multiply-add opperation and outputs result than to revceive second order
+queue, queue, do multiply-add opperation, <strong>handle different queues
+order</strong> and outputs results. In that case <em>mac</em> will have at least two
+different functions to do which will reduce reusability. Having all
+mentioned in mind, samples are piped into <em>fmap</em> and passed to <em>mac
+wrap</em> wrapper function without information about the highest level of
+queue. This is done by specifing <em>lvl=1</em> parameter in <em>fmap</em> call.
+Beside passing samples, we pass shamt and coefficient for calc directly.
+As you can see in mac wrap function samples are concatenated with
+ceofficiens using <em>czip</em> module and passed to <em>mac</em>. <em>Mac</em> result is
+shifted by shamt and casted to samples data type (dtype[0] means only
+data type which is integer not queue). After doing multiply-add, result
+is returned and the highest level of samples queue is concatenated to it
+by <em>fmap</em>. Here is code that instantionate <em>mac</em> using wrapper function
+mac wrap.</p>
+<div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="nd">@gear</span>
+<span class="k">def</span> <span class="nf">mac_wrap</span><span class="p">(</span><span class="n">shamt</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">samples</span><span class="p">):</span>
+    <span class="n">conv_res</span> <span class="o">=</span> <span class="n">czip</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">coefs</span><span class="p">)</span> <span class="o">|</span> <span class="n">mac</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">conv_res</span> <span class="o">&gt;&gt;</span> <span class="n">shamt</span> <span class="o">|</span> <span class="n">samples</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="n">samples</span> \
+      <span class="o">|</span> <span class="n">fmap</span><span class="p">(</span>
+           <span class="n">f</span><span class="o">=</span><span class="n">mac_wrap</span><span class="p">(</span><span class="n">shamt</span><span class="p">,</span> <span class="n">coefficient_for_calc</span><span class="p">),</span> <span class="n">fcat</span><span class="o">=</span><span class="n">czip</span><span class="p">,</span> <span class="n">lvl</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> \
+      <span class="o">|</span> <span class="n">Queue</span><span class="p">[</span><span class="n">samples</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>At the end of implementation process let’s have a look at the most
+interesting waveforms.</p>
+<p>…</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">FIR</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#fir-api">FIR API</a></li>
+<li><a class="reference internal" href="#hardware-description">Hardware Description</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Implementations</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Implementations</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/doc_pg_dsp/fir/fir.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Damjan Rakanovic.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../../_sources/doc_pg_dsp/fir/fir.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
