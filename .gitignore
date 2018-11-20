@@ -1,5 +1,4 @@
-docs/
-pg_dsp
+pg_dsp/
 examples/
 tests/
 *.egg-info/
