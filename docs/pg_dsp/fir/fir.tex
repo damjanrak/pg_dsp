@@ -10,7 +10,6 @@
 \title{Finite Impulse Respons system (FIR) - discrete convolution}
 \date{}
 \maketitle
-
 \section{FIR}
 \subsection{Introduction}
 
@@ -44,7 +43,7 @@ Mathematical record of finite respons on delta impulse should looks like:
 y(n) = \sum_{i=0}^{n}{b_{i} \cdot u(n-i)}
 \end{equation}
 
-Having all that in mind one possible implementation of system with output equation like \eqref{eq:FIR output equation} is shown in figure \ref{fig:FIR block diagrame}.
+Having all that in mind one possible implementation of system with output equation like 3 is shown in figure 1.
 
 \begin{figure}[h]
 \includegraphics[width=1.0\textwidth=•]{/tools/home/pg_dsp/docs/images/FIR_block_diagrame.png}
@@ -52,7 +51,7 @@ Having all that in mind one possible implementation of system with output equati
 \label{fig:FIR block diagrame}
 \end{figure}
 
-Translation of building blocks in figure \ref{fig:FIR block diagrame} to digital hardware is straightforward. Just replace adding block with adder, gain block with multiplier, and delay block (E\textsuperscript{-1}) with register. One possible implementation could be to copy block diagrame directly to some HDL code but that would not be general enough. We suggest another one shown in figure \ref{fig:Sequential FIR calculation}. As we can see, there is a memory storage for coefficients, and multiply accumulate unit that do summation from equation \ref{eq:FIR output equation}. Data from input named coefficients is loaded to memory before computating \ref{eq:FIR output equation}. After loading surrounding hardware should start streaming data samples through samples interface. Connection from samples bus to coef memory is here just to indicate that we need mechanism to synchronize input samples with appropriate coefficient from memory. Later we will show how to do that efficiently using \textbf{PyGears}.
+Translation of building blocks in figure 1 to digital hardware is straightforward. Just replace adding block with adder, gain block with multiplier, and delay block (E\textsuperscript{-1}) with register. One possible implementation could be to copy block diagrame directly to some HDL code but that would not be general enough. We suggest another one shown in figure 2. As we can see, there is a memory storage for coefficients, and multiply accumulate unit that do summation from equation 3. Data from input named coefficients is loaded to memory before computating 3. After loading surrounding hardware should start streaming data samples through samples interface. Connection from samples bus to coef memory is here just to indicate that we need mechanism to synchronize input samples with appropriate coefficient from memory. Later we will show how to do that efficiently using \textbf{PyGears}.
 
 \begin{figure}[h]
 \includegraphics[width=1.0\textwidth=•]{/tools/home/pg_dsp/docs/images/Sequential_FIR.png}
@@ -61,15 +60,12 @@ Translation of building blocks in figure \ref{fig:FIR block diagrame} to digital
 \end{figure}
 
 
-Let's go back to the figure \ref{fig:FIR block diagrame}. Beside it will be slow in terms of frequency because of long combinational path, it will not be optimal regarding silicon needed for implementation. It will use M+1 multipliers and M adders. Because of that, we implement hardware that calculate FIR output sequentially. First, delay registers were removed outside the hardware block assuming that some other component will drive input sequence correctly. That means that current input sample and delayed ones will be driven as stream. If we look at equation \eqref{eq:FIR output equation} this stream is represented by $u(n-i)$ part which sould be multiplied with appropriate coefficient b\textsubscript{i}. Because FIR coefficient will be used over and over again a decision is made to store coefficient in memory module inside the hardware. Another reason for such implementation is caused by idea to make hardware reusable for more general mathematical operation behind the equation \eqref{eq:FIR output equation} called convolution because order of samples could vary.
+Let's go back to the figure 1. Beside it will be slow in terms of frequency because of long combinational path, it will not be optimal regarding silicon needed for implementation. It will use M+1 multipliers and M adders. Because of that, we implement hardware that calculate FIR output sequentially. First, delay registers were removed outside the hardware block assuming that some other component will drive input sequence correctly. That means that current input sample and delayed ones will be driven as stream. If we look at equation 3 this stream is represented by $u(n-i)$ part which sould be multiplied with appropriate coefficient b\textsubscript{i}. Because FIR coefficient will be used over and over again a decision is made to store coefficient in memory module inside the hardware. Another reason for such implementation is caused by idea to make hardware reusable for more general mathematical operation behind the equation 3 called convolution because order of samples could vary.
 
-
-
-\subsection{Implementation}
 \subsection{FIR API}
 
 
-Function named fir represent whole design. It has two inputs, one for coefficients and other for samples. Beside inputs it has two parameters, shamt and coefficient depth.
+Function named fir represent whole design. It has two inputs, one for coefficients and other for samples. Beside inputs it has two parameters, shamt and coefficient depth. Its output is queue of integers with same width as input samples.
 
 \begin{lstlisting}[language=Python, caption=FIR function]
 def fir(coefs,

@@ -48,49 +48,45 @@ as:
    y(n) = \sum_{i=0}^{n}{b_{i} \cdot u(n-i)}
 
 Having all that in mind one possible implementation of system with
-output equation like is shown in figure [fig:FIR block diagrame].
+output equation like 3 is shown in figure 1.
 
-Translation of building blocks in figure [fig:FIR block diagrame] to
-digital hardware is straightforward. Just replace adding block with
-adder, gain block with multiplier, and delay block (E:sup:`-1`) with
-register. One possible implementation could be to copy block diagrame
-directly to some HDL code but that would not be general enough. We
-suggest another one shown in figure [fig:Sequential FIR calculation]. As
-we can see, there is a memory storage for coefficients, and multiply
-accumulate unit that do summation from equation [eq:FIR output
-equation]. Data from input named coefficients is loaded to memory before
-computating [eq:FIR output equation]. After loading surrounding hardware
-should start streaming data samples through samples interface.
-Connection from samples bus to coef memory is here just to indicate that
-we need mechanism to synchronize input samples with appropriate
-coefficient from memory. Later we will show how to do that efficiently
-using **PyGears**.
+Translation of building blocks in figure 1 to digital hardware is
+straightforward. Just replace adding block with adder, gain block with
+multiplier, and delay block (E\ :sup:`-1`) with register. One possible
+implementation could be to copy block diagrame directly to some HDL code
+but that would not be general enough. We suggest another one shown in
+figure 2. As we can see, there is a memory storage for coefficients, and
+multiply accumulate unit that do summation from equation 3. Data from
+input named coefficients is loaded to memory before computating 3. After
+loading surrounding hardware should start streaming data samples through
+samples interface. Connection from samples bus to coef memory is here
+just to indicate that we need mechanism to synchronize input samples
+with appropriate coefficient from memory. Later we will show how to do
+that efficiently using **PyGears**.
 
-Let’s go back to the figure [fig:FIR block diagrame]. Beside it will be
-slow in terms of frequency because of long combinational path, it will
-not be optimal regarding silicon needed for implementation. It will use
-M+1 multipliers and M adders. Because of that, we implement hardware
-that calculate FIR output sequentially. First, delay registers were
-removed outside the hardware block assuming that some other component
-will drive input sequence correctly. That means that current input
-sample and delayed ones will be driven as stream. If we look at equation
-this stream is represented by :math:`u(n-i)` part which sould be
-multiplied with appropriate coefficient b\ :sub:`i`. Because FIR
-coefficient will be used over and over again a decision is made to store
-coefficient in memory module inside the hardware. Another reason for
-such implementation is caused by idea to make hardware reusable for more
-general mathematical operation behind the equation called convolution
+Let’s go back to the figure 1. Beside it will be slow in terms of
+frequency because of long combinational path, it will not be optimal
+regarding silicon needed for implementation. It will use M+1 multipliers
+and M adders. Because of that, we implement hardware that calculate FIR
+output sequentially. First, delay registers were removed outside the
+hardware block assuming that some other component will drive input
+sequence correctly. That means that current input sample and delayed
+ones will be driven as stream. If we look at equation 3 this stream is
+represented by :math:`u(n-i)` part which sould be multiplied with
+appropriate coefficient b\ :sub:`i`. Because FIR coefficient will be
+used over and over again a decision is made to store coefficient in
+memory module inside the hardware. Another reason for such
+implementation is caused by idea to make hardware reusable for more
+general mathematical operation behind the equation 3 called convolution
 because order of samples could vary.
-
-Implementation
---------------
 
 FIR API
 -------
 
 Function named fir represent whole design. It has two inputs, one for
 coefficients and other for samples. Beside inputs it has two parameters,
-shamt and coefficient depth.
+shamt and coefficient depth. Its output is queue of integers with same
+width as input samples.
 
 .. code:: python
 
