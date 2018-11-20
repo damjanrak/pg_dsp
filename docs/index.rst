@@ -25,6 +25,7 @@ Contents
    :maxdepth: 2
 
    examples/index
+   pg_dsp/index
 
 * :ref:`genindex`
 * :ref:`search`

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plot
 from scipy.io.wavfile import write
 from pg_dsp.pygears_fir.verif.filter_maker import filter_maker
 from pg_dsp.pygears_fir.verif.fir_env import fir_sim
@@ -44,4 +45,4 @@ def example_synthetic(sample_rate_hz=44100,
 
 
 if __name__ == "__main__":
-    example_synthetic(nsamples=5000)
+    example_synthetic(nsamples=1000)
