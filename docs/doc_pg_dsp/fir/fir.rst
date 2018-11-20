@@ -52,7 +52,7 @@ output equation like 3 is shown in figure 1.
 
 Translation of building blocks in figure 1 to digital hardware is
 straightforward. Just replace adding block with adder, gain block with
-multiplier, and delay block (E:sup:`-1`) with register. One possible
+multiplier, and delay block (E\ :sup:`-1`) with register. One possible
 implementation could be to copy block diagrame directly to some HDL code
 but that would not be general enough. We suggest another one shown in
 figure 2. As we can see, there is a memory storage for coefficients, and
