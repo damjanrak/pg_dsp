@@ -24,8 +24,8 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   examples/index
-   pg_dsp/index
+   doc_examples/index
+   doc_pg_dsp/index
 
 * :ref:`genindex`
 * :ref:`search`
