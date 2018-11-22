@@ -3,6 +3,7 @@ from pygears.sim import sim
 from pygears.sim.modules import drv, SimVerilated
 from pygears.typing import Int, typeof, Queue
 from pg_dsp.pygears_fir.fir.fir import fir
+from pygears.sim.extens.vcd import VCD
 
 
 @gear
@@ -38,6 +39,6 @@ def fir_sim(samples,
               sim_cls=SimVerilated if cosim else None) \
         | collect(result=result, samples_num=None)
 
-    sim(outdir='./build')
+    sim(outdir='./build', extens=[VCD])
 
     return result
