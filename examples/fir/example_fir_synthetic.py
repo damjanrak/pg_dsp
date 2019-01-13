@@ -1,9 +1,9 @@
 import numpy as np
-import matplotlib.pyplot as plot
+# import matplotlib.pyplot as plot
 from scipy.io.wavfile import write
-from pg_dsp.pygears_fir.verif.filter_maker import filter_maker
-from pg_dsp.pygears_fir.verif.fir_env import fir_sim
-from pg_dsp.pygears_fir.verif.fir_seqs import audio_seq
+from pg_dsp.fir.verif.filter_maker import filter_maker
+from pg_dsp.fir.verif.fir_env import fir_sim
+from pg_dsp.fir.verif.fir_seqs import audio_seq
 
 
 def example_synthetic(sample_rate_hz=44100,
@@ -27,8 +27,7 @@ def example_synthetic(sample_rate_hz=44100,
     wav_input = np.asarray(quantized_input, dtype=np.int16)
     write('synthetic_test_input.wav', sample_rate_hz, wav_input)
 
-    audio = audio_seq(
-        audio_input=quantized_input, filter_ord=len(quantized_taps))
+    audio = audio_seq(audio_input=wav_input, filter_ord=len(quantized_taps))
 
     res = fir_sim(
         samples=audio,
@@ -45,4 +44,4 @@ def example_synthetic(sample_rate_hz=44100,
 
 
 if __name__ == "__main__":
-    example_synthetic(nsamples=1000)
+    example_synthetic(nsamples=5000)

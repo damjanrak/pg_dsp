@@ -1,8 +1,8 @@
 from pygears import gear
 from pygears.sim import sim
 from pygears.sim.modules import drv, SimVerilated
-from pygears.typing import Int, typeof, Queue
-from pg_dsp.pygears_fir.fir.fir import fir
+from pygears.typing import Int, Uint, typeof, Queue
+from pg_dsp.fir.impl.fir import fir
 from pygears.sim.extens.vcd import VCD
 
 
@@ -30,8 +30,8 @@ def fir_sim(samples,
             cosim=True):
 
     result = []
-    samples_din = drv(t=Queue[Int[sample_width], 2], seq=[samples])
-    coef_din = drv(t=Queue[Int[sample_width]], seq=[coef])
+    samples_din = drv(t=Queue[Uint[sample_width], 2], seq=[samples])
+    coef_din = drv(t=Queue[Uint[sample_width]], seq=[coef])
 
     samples_din \
         | fir(coef_din,
@@ -39,6 +39,6 @@ def fir_sim(samples,
               sim_cls=SimVerilated if cosim else None) \
         | collect(result=result, samples_num=None)
 
-    sim(outdir='./build', extens=[VCD])
+    sim(outdir='./build')#, extens=[VCD]
 
     return result

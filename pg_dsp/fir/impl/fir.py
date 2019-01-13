@@ -1,5 +1,5 @@
 from pygears import gear
-from pygears.typing import Queue
+from pygears.typing import Queue, Int
 from pygears.common import fmap, ccat, cart, czip, project, quenvelope
 from pygears.common import const, dreg
 from pygears.cookbook import qcnt, sdp, qlen_cnt, rng
@@ -19,9 +19,16 @@ def fir(coefs,
         shamt=15,
         coefficient_depth=2048):
 
+    # TODO: pg bug with overflow and eots
+    coefs = coefs \
+        | fmap(f=Int[16], lvl=1, fcat=czip)
+
+    samples = samples \
+        | fmap(f=Int[16], lvl=2, fcat=czip)
+
     write_address = coefs \
-                    | qcnt \
-                    | project
+        | qcnt \
+        | project
 
     write_data = coefs | project(lvl=coefs.dtype.lvl)
     write_port = ccat(write_address, write_data)
