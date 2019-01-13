@@ -30,7 +30,9 @@ def fir_sim(samples,
             cosim=True):
 
     result = []
-    samples_din = drv(t=Queue[Uint[sample_width], 2], seq=[samples])
+    samples_din = drv(t=Queue[Int[sample_width], 2], seq=[samples])
+    # BOGI
+    # samples_din = drv(t=Queue[Uint[sample_width], 2], seq=[samples])
     coef_din = drv(t=Queue[Uint[sample_width]], seq=[coef])
 
     samples_din \

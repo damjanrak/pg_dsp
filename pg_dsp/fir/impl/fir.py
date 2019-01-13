@@ -23,8 +23,9 @@ def fir(coefs,
     coefs = coefs \
         | fmap(f=Int[16], lvl=1, fcat=czip)
 
-    samples = samples \
-        | fmap(f=Int[16], lvl=2, fcat=czip)
+    # BOGI
+    # samples = samples \
+    #     | fmap(f=Int[16], lvl=2, fcat=czip)
 
     write_address = coefs \
         | qcnt \
