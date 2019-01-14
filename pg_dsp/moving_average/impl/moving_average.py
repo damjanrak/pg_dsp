@@ -4,7 +4,7 @@ from pygears.common import fmap, czip, union_collapse, fifo
 from pygears.common import ccat, cart, const, decoupler, mul, project
 from pygears.cookbook import replicate, priority_mux
 
-TDin = Queue[Uint['W']]
+TDin = Queue[Int['W']]
 TCfg = Tuple[{'avr_coef': Int['W'],
               'avr_window': Uint['W']}]
 
@@ -59,15 +59,15 @@ def accumulator(din, delayed_din, *, W):
 
 @gear
 def moving_average(cfg: TCfg,
-                   din: TDin,
+                   din,
                    *,
                    W=b'W',
                    shamt=15,
                    max_filter_ord=1024):
 
-    # TODO: pg bug with overflow and eot
-    din = din \
-        | fmap(f=Int[16], lvl=1, fcat=czip)
+    # # TODO: pg bug with overflow and eot
+    # din = din \
+    #     | fmap(f=Int[16], lvl=1, fcat=czip)
 
     scaled_sample = cart(cfg['avr_coef'], din) \
         | fmap(f=scale_input(shamt=shamt, W=W),

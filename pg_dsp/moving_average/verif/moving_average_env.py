@@ -33,7 +33,7 @@ def moving_average_sim(din,
 
     result = []
 
-    din_drv = drv(t=Queue[Uint[sample_width]], seq=[din])
+    din_drv = drv(t=Queue[Int[sample_width]], seq=[din])
     cfg_drv = drv(t=TCfg[sample_width], seq=[cfg])
 
     din_drv \
