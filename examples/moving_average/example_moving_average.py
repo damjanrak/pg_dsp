@@ -35,7 +35,14 @@ def example_synthetic(nsamples,
 
     # prepare input and taps for hardware simulation
     quantized_input = q.quantize(list(scaled))
-
+    # # #OBRISI
+    # with open('../../pg_dsp/moving_average/verif/rtl/input_samples.txt', 'w') as f:
+    #     for i, sample in enumerate(quantized_input):
+    #         eot = 0
+    #         if i == len(quantized_input) - 1:
+    #             eot = 1
+    #         f.write(f'{eot}{format(sample, "016b")}\n')
+    # # #OBRISI
     cfg = (q.quantize(1/window_size), window_size)
 
     wav_input = np.asarray(quantized_input, dtype=np.int16)
@@ -53,4 +60,4 @@ def example_synthetic(nsamples,
 
 
 if __name__ == "__main__":
-    example_synthetic(nsamples=10000, window_size=50)
+    example_synthetic(nsamples=10000, window_size=128)
