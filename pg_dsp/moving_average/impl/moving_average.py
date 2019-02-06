@@ -41,8 +41,8 @@ def accumulator(din, delayed_din, *, W):
     prev_window_sum = Intf(dtype=Int[W])
 
     average = din \
-        | fmap(f=window_sum(prev_window_sum,
-                            delayed_din,
+        | fmap(f=window_sum(add_op=prev_window_sum,
+                            sub_op=delayed_din,
                             W=W),
                lvl=din.dtype.lvl,
                fcat=czip)
@@ -72,7 +72,8 @@ def moving_average(cfg: TCfg,
 
     delayed_din = delay_sample(
         scaled_sample,
-        div(cfg['avr_window'], 2),
+        # div(cfg['avr_window'], 2),
+        cfg['avr_window'],
         W=W,
         max_filter_ord=max_filter_ord)
 
