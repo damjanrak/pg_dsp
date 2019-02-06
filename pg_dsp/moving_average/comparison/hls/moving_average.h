@@ -30,6 +30,4 @@ typedef struct {
   ap_uint<1> eot;
 } din_t;
 
-// data_t moving_average(din_t din, cfg_t cfg);
-
 #endif

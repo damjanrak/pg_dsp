@@ -1,8 +1,6 @@
 // #include "/tools/Xilinx/Vivado/2018.3/include/gmp.h"
 // Proposed solution to Vivado HLS gmp bug
 
-// https://github.com/Xilinx/HLx_Examples/tree/master/DSP/fir_example
-
 #include "ap_int.h"
 #include "moving_average.h"
 
@@ -13,7 +11,6 @@ void moving_average(hls::stream<din_t> &din,  hls::stream<cfg_t> &cfg, hls::stre
 #pragma HLS INTERFACE ap_hs port=cfg
 #pragma HLS INTERFACE ap_hs port=din
 #pragma HLS INTERFACE ap_hs port=dout
-// #pragma HLS resource -core RAM_S2P_LUTRAM "moving_average" shift_reg
 
   data_t shift_reg[MAX_SIZE];
   ap_uint<16> window;
@@ -39,22 +36,17 @@ void moving_average(hls::stream<din_t> &din,  hls::stream<cfg_t> &cfg, hls::stre
 
     tmp = coef * data;
     accum = 0;
-  accum_loop: for (int i = window-1; i >= 0; i--) {
+ accum_loop: for (int i = window-1; i >= 0; i--) {
+#pragma HLS PIPELINE rewind
+#pragma HLS dependence variable=shift_reg inter false
       if (i == 0) {
+        accum += tmp;
         shift_reg[i] = tmp;
       } else {
+        accum += shift_reg[i-1];
         shift_reg[i] = shift_reg[i-1];
       }
-      accum += shift_reg[i];
-      // *dout = accum;
     }
     dout.write(accum);
-  } while (! eot);
+} while (! eot);
 }
-
-// set_directive_resource -core RAM_S2P_LUTRAM "moving_average" shift_reg
-// set_directive_interface -mode ap_hs "moving_average" din
-// set_directive_interface -mode ap_hs "moving_average" cfg
-// set_directive_data_pack "moving_average" din
-// set_directive_data_pack "moving_average" cfg
-// set_directive_interface -mode ap_hs "moving_average" dout
