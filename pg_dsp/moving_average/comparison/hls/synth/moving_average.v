@@ -7,7 +7,7 @@
 
 `timescale 1 ns / 1 ps 
 
-(* CORE_GENERATION_INFO="moving_average,hls_ip_2018_2,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg484-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=7.100000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=2,HLS_SYN_DSP=1,HLS_SYN_FF=219,HLS_SYN_LUT=317,HLS_VERSION=2018_2}" *)
+(* CORE_GENERATION_INFO="moving_average,hls_ip_2018_2,{HLS_INPUT_TYPE=cxx,HLS_INPUT_FLOAT=0,HLS_INPUT_FIXED=1,HLS_INPUT_PART=xc7z020clg484-1,HLS_INPUT_CLOCK=10.000000,HLS_INPUT_ARCH=others,HLS_SYN_CLOCK=7.100000,HLS_SYN_LAT=-1,HLS_SYN_TPT=none,HLS_SYN_MEM=1,HLS_SYN_DSP=1,HLS_SYN_FF=219,HLS_SYN_LUT=317,HLS_VERSION=2018_2}" *)
 
 module moving_average (
         ap_clk,
@@ -78,11 +78,11 @@ wire   [15:0] p_Val2_4_fu_282_p2;
 reg   [15:0] p_Val2_4_reg_348;
 reg    ap_enable_reg_pp0_iter1;
 wire    ap_block_pp0_stage0_subdone;
-reg   [10:0] shift_reg_V_address0;
+reg   [9:0] shift_reg_V_address0;
 reg    shift_reg_V_ce0;
 reg    shift_reg_V_we0;
 wire   [15:0] shift_reg_V_q0;
-wire   [10:0] shift_reg_V_address1;
+wire   [9:0] shift_reg_V_address1;
 reg    shift_reg_V_ce1;
 reg    shift_reg_V_we1;
 reg   [31:0] ap_phi_mux_i6_phi_fu_130_p4;
@@ -118,8 +118,8 @@ end
 
 moving_average_shbkb #(
     .DataWidth( 16 ),
-    .AddressRange( 2048 ),
-    .AddressWidth( 11 ))
+    .AddressRange( 1024 ),
+    .AddressWidth( 10 ))
 shift_reg_V_U(
     .clk(ap_clk),
     .reset(ap_rst),

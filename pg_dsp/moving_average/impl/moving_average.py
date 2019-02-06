@@ -1,12 +1,11 @@
-from pygears import gear, Intf
-from pygears.typing import Int, Uint, Queue, Tuple, bitw
-from pygears.common import fmap, czip, union_collapse, fifo, div
-from pygears.common import ccat, cart, const, decoupler, mul, project
-from pygears.cookbook import replicate, priority_mux
+from pygears import Intf, gear
+from pygears.common import (cart, ccat, const, czip, decoupler, fifo, fmap,
+                            mul, project, union_collapse)
+from pygears.cookbook import priority_mux, replicate
+from pygears.typing import Int, Queue, Tuple, Uint, bitw
 
 TDin = Queue[Int['W']]
-TCfg = Tuple[{'avr_coef': Int['W'],
-              'avr_window': Uint['W']}]
+TCfg = Tuple[{'avr_coef': Int['W'], 'avr_window': Uint['W']}]
 
 
 @gear
@@ -18,7 +17,7 @@ def scale_input(din, *, shamt, W):
 def delay_sample(din, cfg, *, W, max_filter_ord):
     din_window = din \
         | project \
-        | fifo(depth=2**bitw(max_filter_ord-1))
+        | fifo(depth=2**bitw(max_filter_ord-1), regout=True)
 
     initial_load = ccat(cfg, const(val=0, tout=Int[W])) \
         | replicate \
@@ -58,12 +57,7 @@ def accumulator(din, delayed_din, *, W):
 
 
 @gear
-def moving_average(cfg: TCfg,
-                   din,
-                   *,
-                   W=b'W',
-                   shamt=15,
-                   max_filter_ord=1024):
+def moving_average(cfg: TCfg, din, *, W=b'W', shamt=15, max_filter_ord=1024):
 
     scaled_sample = cart(cfg['avr_coef'], din) \
         | fmap(f=scale_input(shamt=shamt, W=W),
@@ -77,5 +71,4 @@ def moving_average(cfg: TCfg,
         W=W,
         max_filter_ord=max_filter_ord)
 
-    return accumulator(
-        scaled_sample, delayed_din, W=W)
+    return accumulator(scaled_sample, delayed_din, W=W)

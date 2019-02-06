@@ -10,7 +10,7 @@ using namespace std;
 #define HW_COSIM
 
 #define W_DATA 16
-#define MAX_SIZE 2048
+#define MAX_SIZE 1024
 
 // #define FLOAT
 
