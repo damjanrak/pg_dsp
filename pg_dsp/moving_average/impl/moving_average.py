@@ -1,6 +1,6 @@
 from pygears import Intf, gear
 from pygears.common import (cart, ccat, const, czip, decoupler, fifo, fmap,
-                            mul, project, union_collapse)
+                            mul, project, union_collapse, dreg, degen)
 from pygears.cookbook import priority_mux, replicate
 from pygears.typing import Int, Queue, Tuple, Uint, bitw
 
@@ -17,7 +17,9 @@ def scale_input(din, *, shamt, W):
 def delay_sample(din, cfg, *, W, max_filter_ord):
     din_window = din \
         | project \
-        | fifo(depth=2**bitw(max_filter_ord-1), regout=True)
+        | decoupler(depth=2**bitw(max_filter_ord-1))
+
+        # | fifo(depth=2**bitw(max_filter_ord-1), regout=True)
 
     initial_load = ccat(cfg, const(val=0, tout=Int[W])) \
         | replicate \
@@ -48,10 +50,11 @@ def accumulator(din, delayed_din, *, W):
 
     average_reg = average \
         | project \
-        | decoupler
+        | dreg
 
     prev_window_sum |= priority_mux(average_reg, const(val=0, tout=Int[W])) \
-        | union_collapse
+        | union_collapse \
+        | degen
 
     return average
 

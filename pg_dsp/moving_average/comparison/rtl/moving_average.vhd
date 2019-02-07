@@ -26,6 +26,8 @@ architecture FSMD of moving_average is
   type t2d_array is array (0 to max_filter_ord) of signed(W-1 downto 0);
   signal state_reg, state_next: state_t;
   signal memory: t2d_array;
+  attribute ram_style : string;
+  attribute ram_style of memory : signal is "bram";
   signal rd_ptr_reg, rd_ptr_next: unsigned(log2c(max_filter_ord) downto 0);
   signal wr_ptr_reg, wr_ptr_next: unsigned(log2c(max_filter_ord) downto 0);
   signal din_handshake: std_logic;
@@ -67,7 +69,8 @@ begin
           state_next <= transition;
         end if;
       when transition =>
-        if (wr_ptr_reg >= shift_right(avr_window, 1)) then
+        -- if (wr_ptr_reg >= shift_right(avr_window, 1)) then
+        if (wr_ptr_reg >= avr_window) then
           state_next <= steady;
         end if;
       when steady =>
@@ -131,10 +134,12 @@ begin
 
   process(state_reg, memory)
   begin
-    if state_reg /= steady then
-      out_of_window <= (others=>'0');
-    else
-      out_of_window <= memory(to_integer(rd_ptr_reg(log2c(max_filter_ord)-1 downto 0)));
+    if clk='1' and clk'event then
+      if state_reg /= steady then
+        out_of_window <= (others=>'0');
+      else
+        out_of_window <= memory(to_integer(rd_ptr_next(log2c(max_filter_ord)-1 downto 0)));
+      end if;
     end if;
   end process;
 
