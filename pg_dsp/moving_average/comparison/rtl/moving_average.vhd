@@ -115,6 +115,7 @@ begin
   multiplier <= shift_right((sample * signed(cfg(2*W-1 downto W))), shamt);
   scaled_sample <= multiplier(W-1 downto 0);
 
+  --FIFO LOGIC
   process(state_reg, wr_ptr_reg, rd_ptr_reg)
   begin
     wr_ptr_next <= wr_ptr_reg;
@@ -134,12 +135,10 @@ begin
 
   process(state_reg, memory)
   begin
-    if clk='1' and clk'event then
-      if state_reg /= steady then
-        out_of_window <= (others=>'0');
-      else
-        out_of_window <= memory(to_integer(rd_ptr_next(log2c(max_filter_ord)-1 downto 0)));
-      end if;
+    if state_reg /= steady then
+      out_of_window <= (others=>'0');
+    else
+      out_of_window <= memory(to_integer(rd_ptr_next(log2c(max_filter_ord)-1 downto 0)));
     end if;
   end process;
 
