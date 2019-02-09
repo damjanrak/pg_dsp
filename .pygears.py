@@ -6,4 +6,6 @@ svlib_dir = os.path.join(
     os.path.dirname(pg_dsp.__file__), 'utils', 'custom_gears', 'svlib')
 
 registry('svgen/sv_paths').append(svlib_dir)
-bind('svgen/debug_intfs', ['nebuloza'])
+bind('svgen/debug_intfs', ['*'])
+
+# bind('logger/sim/error', 'pass')

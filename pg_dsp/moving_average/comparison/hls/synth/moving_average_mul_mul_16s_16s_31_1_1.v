@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-  module moving_average_mucud_DSP48_0(a, b, p);
+  module moving_average_mul_mul_16s_16s_31_1_1_DSP48_0(a, b, p);
 input signed [16 - 1 : 0] a;
 input signed [16 - 1 : 0] b;
 output signed [31 - 1 : 0] p;
@@ -9,9 +9,8 @@ output signed [31 - 1 : 0] p;
 assign p = $signed (a) * $signed (b);
 
 endmodule
-
 `timescale 1 ns / 1 ps
-module moving_average_mucud(
+module moving_average_mul_mul_16s_16s_31_1_1(
     din0,
     din1,
     dout);
@@ -27,7 +26,7 @@ output[dout_WIDTH - 1:0] dout;
 
 
 
-moving_average_mucud_DSP48_0 moving_average_mucud_DSP48_0_U(
+moving_average_mul_mul_16s_16s_31_1_1_DSP48_0 moving_average_mul_mul_16s_16s_31_1_1_DSP48_0_U(
     .a( din0 ),
     .b( din1 ),
     .p( dout ));

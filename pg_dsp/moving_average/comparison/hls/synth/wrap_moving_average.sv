@@ -24,9 +24,9 @@ module wrap_moving_average
                                  .cfg_V(cfg_data),
                                  .cfg_V_ap_vld(cfg_valid),
                                  .cfg_V_ap_ack(cfg_ready),
-                                 .dout_V_V(dout_data),
-                                 .dout_V_V_ap_vld(dout_valid),
-                                 .dout_V_V_ap_ack(dout_ready)
+                                 .dout_V(dout_data),
+                                 .dout_V_ap_vld(dout_valid),
+                                 .dout_V_ap_ack(dout_ready)
                                  );
 
 endmodule
