@@ -171,7 +171,7 @@ begin
   process(din_valid, state_reg)
   begin
     dout_valid <= '0';
-    if state_reg = steady then
+    if (state_reg = steady) or (state_reg = transition) then
       dout_valid <= din_valid;
     end if;
   end process;

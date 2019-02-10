@@ -55,11 +55,8 @@ def example_synthetic(nsamples,
                              sample_width=16)
     #OBRISI
     with open('../../pg_dsp/moving_average/comparison/rtl_verif/ref_model.txt', 'w') as f:
-        for i, sample in enumerate(res):
-            eot = 0
-            if i == len(res) - 1:
-                eot = 1
-            f.write(f'{eot}{format(sample, "016b")}\n')
+        for sample in res:
+            f.write(f'{sample[1]}{format(sample[0], "016b")}\n')
     #OBRISI
 
     wav_res = np.asarray(res, dtype=np.int16)[:, 0]
@@ -70,4 +67,4 @@ def example_synthetic(nsamples,
 
 
 if __name__ == "__main__":
-    example_synthetic(nsamples=10000, window_size=128)
+    example_synthetic(nsamples=10000, window_size=5)
