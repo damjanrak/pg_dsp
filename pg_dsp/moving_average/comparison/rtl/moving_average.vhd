@@ -118,7 +118,7 @@ begin
   scaled_sample <= multiplier(W-1 downto 0);
 
   --FIFO LOGIC
-  process(state_reg, wr_ptr_reg, rd_ptr_reg)
+  process(state_reg, wr_ptr_reg, rd_ptr_reg, state_next)
   begin
     wr_ptr_next <= wr_ptr_reg;
     rd_ptr_next <= rd_ptr_reg;
@@ -135,12 +135,18 @@ begin
     end case;
   end process;
 
-  process(state_reg, memory, rd_ptr_next)
+  process(clk)
   begin
-    if state_reg /= steady then
-      out_of_window <= (others=>'0');
-    else
-      out_of_window <= memory(to_integer(rd_ptr_next(log2c(max_filter_ord)-1 downto 0)));
+    if clk'event and clk = '1' then
+      if rst = '1' then
+        out_of_window <= (others=>'0');
+      else
+        if state_next /= steady then
+          out_of_window <= (others=>'0');
+        else
+          out_of_window <= memory(to_integer(rd_ptr_reg(log2c(max_filter_ord)-1 downto 0)));
+        end if;
+      end if;
     end if;
   end process;
 
@@ -179,7 +185,7 @@ begin
       if rst = '1' then
         valid_reg <= '0';
       elsif reg_ready = '1' then
-        if (state_next /= idle) then
+        if ((state_next = transition) or (state_reg /= idle)) then
           valid_reg <= din_valid;
         else
           valid_reg <= '0';
