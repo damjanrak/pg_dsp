@@ -56,7 +56,10 @@ def example_synthetic(nsamples,
     #OBRISI
     with open('../../pg_dsp/moving_average/comparison/rtl_verif/ref_model.txt', 'w') as f:
         for sample in res:
-            f.write(f'{sample[1]}{format(sample[0], "016b")}\n')
+            tmp = sample[0]
+            if sample[0] < 0:
+                tmp = sample[0] + 2**16
+            f.write(f'{sample[1]}{format(tmp, "016b")}\n')
     #OBRISI
 
     wav_res = np.asarray(res, dtype=np.int16)[:, 0]
