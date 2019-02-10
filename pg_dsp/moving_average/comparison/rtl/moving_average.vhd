@@ -62,7 +62,7 @@ begin
     end if;
   end process;
 
-  process(state_reg, cfg_valid, din_valid, avr_window, wr_ptr_reg, wr_ptr_next)
+  process(state_reg, cfg_valid, din_valid, avr_window, wr_ptr_reg, wr_ptr_next, last_din)
   begin
     state_next <= state_reg;
     case (state_reg) is
@@ -84,7 +84,7 @@ begin
   end process;
 
   -- INPUT LOGIC
-  process(state_reg, last_din)
+  process(state_reg, last_din, din_handshake)
   begin
     cfg_ready <= '0';
     if state_reg = steady and last_din = '1' then
@@ -135,7 +135,7 @@ begin
     end case;
   end process;
 
-  process(state_reg, memory)
+  process(state_reg, memory, rd_ptr_next)
   begin
     if state_reg /= steady then
       out_of_window <= (others=>'0');
