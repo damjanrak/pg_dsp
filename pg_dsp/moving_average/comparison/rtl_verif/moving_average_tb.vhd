@@ -41,6 +41,7 @@ architecture behavioral of moving_average_tb is
   signal dout_s: signed(W downto 0);
   constant clk_p : time := 10 ns;
   file input_test_vector : text open read_mode is "/tools/home/pg_dsp/pg_dsp/moving_average/comparison/rtl_verif/input_samples.txt";
+  file ref_model : text open read_mode is "/tools/home/pg_dsp/pg_dsp/moving_average/comparison/rtl_verif/ref_model.txt";
   file result_vector : text open write_mode is "/tools/home/pg_dsp/pg_dsp/moving_average/comparison/rtl_verif/output_samples.txt";
 
   function to_std_logic(c: character) return std_logic is
@@ -184,11 +185,18 @@ begin
 
   process(clk_s)
     variable tv : line;
+    variable ref : line;
     variable tmp : string(1 to 17);
+    variable ref_vector : std_logic_vector(W downto 0);
   begin
     if rising_edge(clk_s) then
       if (dout_valid_s and dout_ready_s) = '1' then
         tmp := to_string(std_logic_vector(dout_s));
+        readline(ref_model, ref);
+        ref_vector := to_std_logic_vector(string(ref));
+        if ref_vector /= std_logic_vector(dout_s) then
+          report "output failure" severity failure;
+        end if;
         write(tv, tmp);
         writeline(result_vector, tv);
       end if;
