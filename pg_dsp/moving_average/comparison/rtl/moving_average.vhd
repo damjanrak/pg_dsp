@@ -41,6 +41,8 @@ architecture FSMD of moving_average is
   signal last_din: std_logic;
   signal sample: signed(W-1 downto 0);
   signal accum_next, accum_reg : signed(W-1 downto 0);
+  signal reg_ready, reg_empty, valid_reg: std_logic;
+  signal dout_reg: signed(W downto 0);
 begin
 
   avr_coef <= signed(cfg(2*W-1 downto W));
@@ -91,7 +93,7 @@ begin
   end process;
 
   din_handshake <= din_valid and din_ready_s;
-  din_ready_s <= dout_ready;
+  din_ready_s <= reg_ready;
   din_ready <= din_ready_s;
   --------------------------
   --       DATA PATH      --
@@ -168,13 +170,28 @@ begin
   accum_next <= accum_reg + scaled_sample - out_of_window;
 
   -- OUTPUT LOGIC
-  process(din_valid, state_reg)
+  reg_ready <= reg_empty or dout_ready;
+  reg_empty <= not valid_reg;
+
+  process(clk)
   begin
-    dout_valid <= '0';
-    if (state_reg = steady) or (state_reg = transition) then
-      dout_valid <= din_valid;
+    if clk'event and clk='1' then
+      if rst = '1' then
+        valid_reg <= '0';
+      elsif reg_ready = '1' then
+        if (state_next /= idle) then
+          valid_reg <= din_valid;
+        else
+          valid_reg <= '0';
+        end if;
+        dout_reg <= last_din & accum_next;
+      end if;
     end if;
   end process;
-  dout <= last_din & accum_next;
+
+  dout <= dout_reg;
+  dout_valid <= valid_reg;
+
+
 
 end;
