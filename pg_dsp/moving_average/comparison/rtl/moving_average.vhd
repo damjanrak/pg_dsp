@@ -45,8 +45,8 @@ architecture FSMD of moving_average is
   signal dout_reg: signed(W downto 0);
 begin
 
-  avr_coef <= signed(cfg(2*W-1 downto W));
-  avr_window <= unsigned(cfg(W-1 downto 0));
+  avr_window <= unsigned(cfg(2*W-1 downto W));
+  avr_coef <= signed(cfg(W-1 downto 0));
   last_din <= din(W);
   sample <= signed(din(W-1 downto 0));
 
@@ -93,8 +93,17 @@ begin
   end process;
 
   din_handshake <= din_valid and din_ready_s;
-  din_ready_s <= reg_ready;
   din_ready <= din_ready_s;
+
+  din_ready_proc: process (reg_ready, state_reg) is
+  begin
+    if (state_reg /= IDLE) then
+      din_ready_s <= reg_ready;
+    else
+      din_ready_s <= '0';
+    end if;
+  end process din_ready_proc;
+
   --------------------------
   --       DATA PATH      --
   --------------------------
@@ -114,7 +123,7 @@ begin
     end if;
   end process;
 
-  multiplier <= shift_right((sample * signed(cfg(2*W-1 downto W))), shamt);
+  multiplier <= shift_right((sample * avr_coef), shamt);
   scaled_sample <= multiplier(W-1 downto 0);
 
   --FIFO LOGIC
@@ -125,7 +134,7 @@ begin
     case (state_reg) is
       when idle =>
         rd_ptr_next <= (others=>'0');
-        wr_ptr_next <= ((0)=>'1', others=>'0');
+        wr_ptr_next <= to_unsigned(1, log2c(max_filter_ord)+1);
       when transition =>
         wr_ptr_next <= wr_ptr_reg + 1;
       when steady =>
@@ -154,7 +163,9 @@ begin
   begin
     if clk='1' and clk'event then
       if (din_handshake = '1') then
+        if (state_next /= IDLE) then
         memory(to_integer(wr_ptr_reg(log2c(max_filter_ord)-1 downto 0))) <= scaled_sample;
+        end if;
       end if;
     end if;
   end process;
@@ -166,7 +177,7 @@ begin
       if rst = '1' then
         accum_reg <= (others=>'0');
       else
-        if (din_handshake='1') then
+        if (din_handshake='1' and cfg_valid='1') then
           accum_reg <= accum_next;
         end if;
       end if;
@@ -185,7 +196,7 @@ begin
       if rst = '1' then
         valid_reg <= '0';
       elsif reg_ready = '1' then
-        if ((state_next = transition) or (state_reg /= idle)) then
+        if (state_reg /= idle) then
           valid_reg <= din_valid;
         else
           valid_reg <= '0';
